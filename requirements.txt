@@ -3,3 +3,17 @@ black
 autopep8
 isort
 yapf
+
+# Core AI SDK
+openai>=1.0.0
+
+# API Framework & Web Server
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+
+# Environment Variable Management
+python-dotenv>=1.0.0
+
+# HTTP Client (Required for the omnikon_client.py)
+httpx>=0.24.0
