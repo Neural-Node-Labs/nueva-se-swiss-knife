@@ -123,13 +123,20 @@ class OmnikonSwarmProcessorWorker(QThread):
     log_signal = pyqtSignal(str)
     completed_signal = pyqtSignal(str)
 
-    def __init__(self, provider, model, api_key, swarm_count, task):
+    def __init__(self, provider, model, api_key, swarm_count, task, workspace):
         super().__init__()
         self.provider = provider
         self.model = model
         self.api_key = api_key
         self.swarm_count = swarm_count
         self.task = task
+
+        if not os.path.exists(workspace):
+            os.makedirs(workspace)
+            print(f"Workspace created at: {workspace}")
+        else:
+            print(f"Workspace already exists at: {workspace}")
+        self.workspace = workspace
 
     def run(self):
         try:
@@ -157,7 +164,7 @@ class OmnikonSwarmProcessorWorker(QThread):
 
                 # 2. Parallel Pool Agent Processing Stage
                 self.log_signal.emit(f"🔥 STAGE 2: DISPATCHING Parallel Execution Worker Pools via ThreadPoolExecutor...")
-                cfg = omnikon.OmnikonConfig(provider="openai", api_key=self.api_key, max_swarm_agents=self.swarm_count)
+                cfg = omnikon.OmnikonConfig(provider="openai", api_key=self.api_key, max_swarm_agents=self.swarm_count,workspace=self.workspace)
                 omnikon.PROVIDERS["openai"] = {"base_url": base_url, "model": self.model}
 
                 swarm_agents = []
@@ -240,6 +247,12 @@ class OmnikonStandaloneApplication(QMainWindow):
         config_layout = QVBoxLayout(config_box)
         config_layout.setSpacing(12)
 
+        config_layout.addSpacing(10)
+        config_layout.addWidget(QLabel("📝 TASK OBJECTIVE PROMPT DIRECTIVE:"))
+        self.input_task_directive = QTextEdit()
+        self.input_task_directive.setPlaceholderText("Type high-level operational objective description data points here to orchestrate through parallel swarm nodes...")
+        config_layout.addWidget(self.input_task_directive)
+
         # Provider Selection Matrix Box Input
         config_layout.addWidget(QLabel("📡 OPERATIONAL AI NETWORK PROVIDER:"))
         self.combo_provider = QComboBox()
@@ -266,16 +279,15 @@ class OmnikonStandaloneApplication(QMainWindow):
         self.spin_swarm_agents.setValue(4)
         config_layout.addWidget(self.spin_swarm_agents)
 
+        config_layout.addWidget(QLabel("📂 TARGET WORKSPACE PATH:"))
+        self.input_workspace = QLineEdit()
+        self.input_workspace.setText(os.getcwd()) # Default to current directory
+        config_layout.addWidget(self.input_workspace)
+
         # Save Configuration Commit Button
         self.btn_save_settings = QPushButton("💾 COMMIT ALL SETTINGS CONSOLE VALUES TO DISK")
         self.btn_save_settings.clicked.connect(self.save_configuration_settings)
         config_layout.addWidget(self.btn_save_settings)
-
-        config_layout.addSpacing(10)
-        config_layout.addWidget(QLabel("📝 TASK OBJECTIVE PROMPT DIRECTIVE:"))
-        self.input_task_directive = QTextEdit()
-        self.input_task_directive.setPlaceholderText("Type high-level operational objective description data points here to orchestrate through parallel swarm nodes...")
-        config_layout.addWidget(self.input_task_directive)
 
         # Swarm Orchestration Fire Button Trigger Command
         self.btn_execute_swarm = QPushButton("🚀 ENGAGE PARALLEL SWARM RUN CONSOLE")
@@ -336,7 +348,7 @@ class OmnikonStandaloneApplication(QMainWindow):
             try:
                 with open(CONFIG_FILE_PATH, "r", encoding="utf-8") as f:
                     config = json.load(f)
-
+                self.input_workspace.setText(config.get("workspace_path", os.getcwd()))
                 saved_provider = config.get("selected_provider", "")
                 if saved_provider in AI_PROVIDERS_MATRIX:
                     self.combo_provider.setCurrentText(saved_provider)
@@ -359,7 +371,8 @@ class OmnikonStandaloneApplication(QMainWindow):
             "selected_provider": self.combo_provider.currentText(),
             "selected_model": self.combo_model.currentText(),
             "api_key": self.input_api_key.text().strip(),
-            "swarm_agents_count": self.spin_swarm_agents.value()
+            "swarm_agents_count": self.spin_swarm_agents.value(),
+            "workspace_path": self.input_workspace.text().strip()
         }
         try:
             with open(CONFIG_FILE_PATH, "w", encoding="utf-8") as f:
@@ -367,6 +380,9 @@ class OmnikonStandaloneApplication(QMainWindow):
             self.console_stream_monitor.append("✅ DISK SUCCESS: CURRENT SELECTION MATRIX PERSISTED TO CONFIG CONSOLE.")
         except Exception as e:
             self.console_stream_monitor.append(f"❌ CRITICAL STORAGE ERROR: WRITE FAILURE ON SECTOR MATRIX -> {e}")
+
+
+
 
     def execute_omnikon_swarm_pipeline(self):
         """Launches isolated background worker orchestration threads to process parallel tasks flawlessly."""
@@ -384,7 +400,8 @@ class OmnikonStandaloneApplication(QMainWindow):
             model=self.combo_model.currentText(),
             api_key=self.input_api_key.text().strip(),
             swarm_count=self.spin_swarm_agents.value(),
-            task=task_prompt
+            task=task_prompt,
+            workspace=self.input_workspace.text().strip()
         )
 
         # Connect signals for cross-thread graphical interface console updates safely
