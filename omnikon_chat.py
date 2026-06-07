@@ -248,10 +248,44 @@ class OmnikonStandaloneApplication(QMainWindow):
         config_layout.setSpacing(12)
 
         config_layout.addSpacing(10)
-        config_layout.addWidget(QLabel("📝 TASK OBJECTIVE PROMPT DIRECTIVE:"))
+        config_layout.addWidget(QLabel("🤖 CHAT / 📝 TASK OBJECTIVE PROMPT DIRECTIVE:"))
         self.input_task_directive = QTextEdit()
         self.input_task_directive.setPlaceholderText("Type high-level operational objective description data points here to orchestrate through parallel swarm nodes...")
         config_layout.addWidget(self.input_task_directive)
+
+        # Swarm Orchestration Fire Button Trigger Command
+        self.btn_execute_chat = QPushButton("🤖 CHAT WITH")
+        self.btn_execute_chat.setStyleSheet("""
+            QPushButton {
+                background-color: #051a14;
+                border: 1px solid #00ff88;
+                color: #00ff88;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #00ff88;
+                color: #040d1a;
+            }
+        """)
+
+        # Swarm Orchestration Fire Button Trigger Command
+        self.btn_execute_swarm = QPushButton("🚀 ENGAGE PARALLEL SWARM RUN CONSOLE")
+        self.btn_execute_swarm.setStyleSheet("""
+            QPushButton {
+                background-color: #051a14;
+                border: 1px solid #00ff88;
+                color: #00ff88;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #00ff88;
+                color: #040d1a;
+            }
+        """)
+        self.btn_execute_swarm.clicked.connect(self.execute_omnikon_swarm_pipeline)
+        self.btn_execute_chat.clicked.connect(self.execute_omnikon_chat_pipeline)
+        config_layout.addWidget(self.btn_execute_chat)
+        config_layout.addWidget(self.btn_execute_swarm)
 
         # Provider Selection Matrix Box Input
         config_layout.addWidget(QLabel("📡 OPERATIONAL AI NETWORK PROVIDER:"))
@@ -289,22 +323,7 @@ class OmnikonStandaloneApplication(QMainWindow):
         self.btn_save_settings.clicked.connect(self.save_configuration_settings)
         config_layout.addWidget(self.btn_save_settings)
 
-        # Swarm Orchestration Fire Button Trigger Command
-        self.btn_execute_swarm = QPushButton("🚀 ENGAGE PARALLEL SWARM RUN CONSOLE")
-        self.btn_execute_swarm.setStyleSheet("""
-            QPushButton {
-                background-color: #051a14;
-                border: 1px solid #00ff88;
-                color: #00ff88;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #00ff88;
-                color: #040d1a;
-            }
-        """)
-        self.btn_execute_swarm.clicked.connect(self.execute_omnikon_swarm_pipeline)
-        config_layout.addWidget(self.btn_execute_swarm)
+
 
         main_layout.addWidget(config_box)
 
@@ -382,7 +401,10 @@ class OmnikonStandaloneApplication(QMainWindow):
             self.console_stream_monitor.append(f"❌ CRITICAL STORAGE ERROR: WRITE FAILURE ON SECTOR MATRIX -> {e}")
 
 
+    def execute_omnikon_chat_pipeline(self):
 
+        """ Placeholder for single stream direct chat execution method, can be implemented similarly to swarm pipeline but without multi-threading and orchestration layers. """
+        self.output_final_view.setPlainText("🚧 SINGLE STREAM CHAT WORKER FUNCTIONALITY UNDER DEVELOPMENT. PLEASE USE THE PARALLEL SWARM PIPELINE FOR FULL SYSTEM ENGAGEMENT DEMONSTRATION. 🚧")
 
     def execute_omnikon_swarm_pipeline(self):
         """Launches isolated background worker orchestration threads to process parallel tasks flawlessly."""
